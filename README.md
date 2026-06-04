@@ -1,9 +1,11 @@
+```chmod 644 /etc/apt/trusted.gpg.d/* && apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true --allow-unauthenticated && apt-get install -y --allow-unauthenticated curl wget ca-certificates```
+
 # 📦 PROOT UBUNTU 22.04 LIVE CONTAINER ENGINE
 
 🚀 **An interactive, lightweight, browser-accessible virtualization engine.**
 
 👤 **Operator:** ImGunpoint  
-🛠️ **Engineered By:** ImGunpoint & Gemini AI
+🛠️ **Engineered By:** ImGunpoint
 
 ---
 
