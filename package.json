@@ -6,24 +6,11 @@
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": [
-    "proot",
-    "ubuntu",
-    "terminal",
-    "websocket",
-    "interactive",
-    "shell"
-  ],
   "author": "ImGunpoint",
   "license": "ISC",
   "dependencies": {
-    "ws": "^8.18.0"
     "encore.dev": "^1.4.0",
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  }
-}
+    "ws": "^8.18.0"
   },
   "engines": {
     "node": ">=16.0.0"
