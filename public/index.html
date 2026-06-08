@@ -1,0 +1,90 @@
+<script>
+    const term = document.getElementById('terminal');
+    const input = document.getElementById('cmd-input');
+    const btnCtrlC = document.getElementById('btn-ctrl-c');
+    const btnRestart = document.getElementById('btn-restart');
+    
+    // 🌐 ENCORE ADAPTATION: Point directly to Encore's production stream API endpoint
+    const proto = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const ws = new WebSocket(proto + window.location.host + "/terminal/stream");
+
+    function parseAnsi(text) {
+        const ansiMap = {
+            '30': 'ansi-black', '31': 'ansi-red', '32': 'ansi-green', '33': 'ansi-yellow',
+            '34': 'ansi-blue', '35': 'ansi-magenta', '36': 'ansi-cyan', '37': 'ansi-white',
+            '90': 'ansi-bright-black', '91': 'ansi-bright-red', '92': 'ansi-bright-green', '93': 'ansi-bright-yellow',
+            '94': 'ansi-bright-blue', '95': 'ansi-bright-magenta', '96': 'ansi-bright-cyan', '97': 'ansi-bright-white',
+            '1': 'ansi-bold'
+        };
+        let cleanHTML = "";
+        let segments = text.split(/\\x1B\\[|\\e\\[/);
+        if (segments.length === 1) return text.replace(/\\n/g, '<br>');
+        cleanHTML += segments[0];
+        for (let i = 1; i < segments.length; i++) {
+            let parts = segments[i].split('m');
+            let codes = parts[0].split(';');
+            let content = parts.slice(1).join('m');
+            if (codes.length === 1 && (codes[0] === '0' || codes[0] === '')) {
+                cleanHTML += '</span>' + content;
+            } else {
+                let classes = codes.map(c => ansiMap[c] || '').join(' ').trim();
+                cleanHTML += `<span class="${classes}">` + content;
+            }
+        }
+        return cleanHTML.replace(/\\n/g, '<br>');
+    }
+
+    ws.onopen = () => {
+        term.innerHTML += '<span class="ansi-bright-green">[SYSTEM]: Quantum data bridge built via Encore Gateway. Virtual terminal ready.</span><br>';
+    };
+
+    ws.onmessage = (e) => {
+        try {
+            const payload = JSON.parse(e.data);
+            // 🌐 ENCORE ADAPTATION: Handle Encore's type-safe streaming schema format
+            if (payload.actionType === 'sys_reload') {
+                window.location.reload();
+                return;
+            }
+            if (payload.outputChunk) {
+                term.innerHTML += parseAnsi(payload.outputChunk);
+                term.scrollTop = term.scrollHeight;
+            }
+        } catch(err) {
+            // Fallback
+        }
+    };
+
+    ws.onclose = () => {
+        term.innerHTML += '<span class="ansi-bright-red"><br>[CRITICAL]: Pipeline sync dropped. Backend subsystem destroyed.</span><br>';
+        input.disabled = true;
+        btnCtrlC.disabled = true;
+        btnRestart.disabled = true;
+    };
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const command = input.value;
+            // 🌐 ENCORE ADAPTATION: Send objects fitting our TypeScript API schemas
+            ws.send(JSON.stringify({ type: 'cmd', payload: command + '\n' })); 
+            input.value = '';
+        }
+    });
+
+    btnCtrlC.addEventListener('click', (e) => {
+        e.stopPropagation();
+        ws.send(JSON.stringify({ type: 'action', payload: 'SIGINT' }));
+        input.focus();
+    });
+
+    btnRestart.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(confirm("Are you certain you want to trigger an environment wrapper cold reboot?")) {
+            ws.send(JSON.stringify({ type: 'action', payload: 'RESTART' }));
+        }
+    });
+
+    document.addEventListener('click', () => {
+        if (!input.disabled) input.focus();
+    });
+</script>
