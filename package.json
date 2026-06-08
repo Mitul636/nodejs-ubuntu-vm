@@ -2,7 +2,7 @@
   "name": "proot-ubuntu-container-engine",
   "version": "1.0.0",
   "description": "An interactive, browser-accessible Ubuntu userspace environment powered by PRoot and WebSockets.",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
@@ -18,6 +18,12 @@
   "license": "ISC",
   "dependencies": {
     "ws": "^8.18.0"
+    "encore.dev": "^1.4.0",
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
   },
   "engines": {
     "node": ">=16.0.0"
